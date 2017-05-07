@@ -1,0 +1,33 @@
+group 'clinicalnlp'
+version '1.0-SNAPSHOT'
+
+task wrapper(type: Wrapper) {
+  gradleVersion = '3.3'
+  distributionUrl = "https://services.gradle.org/distributions/gradle-$gradleVersion-all.zip"
+}
+
+apply plugin: 'groovy'
+apply plugin: 'java'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+def dkpro$core$version = '1.9.0-SNAPSHOT'
+
+dependencies {
+    compile 'org.codehaus.groovy:groovy-all:2.4.11'
+
+    compile 'org.apache.logging.log4j:log4j-api:2.8.2'
+    compile 'org.apache.logging.log4j:log4j-core:2.8.2'
+    compile 'org.slf4j:slf4j-log4j12:1.7.25'
+
+    compile 'org.apache.uima:uimaj-core:2.10.0'
+    compile 'org.apache.uima:uimafit-core:2.3.0'
+
+    testCompile "de.tudarmstadt.ukp.dkpro.core:de.tudarmstadt.ukp.dkpro.core.opennlp-asl:${dkpro$core$version}"
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+}
