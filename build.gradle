@@ -28,6 +28,7 @@ dependencies {
     compile 'org.apache.uima:uimaj-core:2.10.0'
     compile 'org.apache.uima:uimafit-core:2.3.0'
 
+    testCompile "clinicalnlp:groovy-dsl:1.0-SNAPSHOT"
     testCompile "de.tudarmstadt.ukp.dkpro.core:de.tudarmstadt.ukp.dkpro.core.opennlp-asl:${dkpro$core$version}"
     testCompile group: 'junit', name: 'junit', version: '4.12'
 }
