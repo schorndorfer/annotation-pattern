@@ -13,9 +13,22 @@ apply plugin: 'maven'
 sourceCompatibility = 1.8
 
 repositories {
-    mavenLocal()
     mavenCentral()
+    mavenLocal()
+    maven {
+        url 'http://zoidberg.ukp.informatik.tu-darmstadt.de/artifactory/public-releases'
+    }
+    maven {
+        url 'http://zoidberg.ukp.informatik.tu-darmstadt.de/artifactory/public-snapshots'
+    }
+    maven {
+        url 'http://zoidberg.ukp.informatik.tu-darmstadt.de/artifactory/public-model-releases-local'
+    }
+    maven {
+        url 'http://decipher.chpc.utah.edu/nexus/content/groups/public'
+    }
 }
+
 
 def dkpro$core$version = '1.9.0-SNAPSHOT'
 
