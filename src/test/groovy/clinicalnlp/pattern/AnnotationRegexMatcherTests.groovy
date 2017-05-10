@@ -1,8 +1,12 @@
 package clinicalnlp.pattern
 
+import de.tudarmstadt.ukp.dkpro.core.api.lexmorph.type.pos.POS
 import de.tudarmstadt.ukp.dkpro.core.api.ner.type.NamedEntity
 import de.tudarmstadt.ukp.dkpro.core.api.segmentation.type.Document
+import de.tudarmstadt.ukp.dkpro.core.api.segmentation.type.Lemma
+import de.tudarmstadt.ukp.dkpro.core.api.segmentation.type.Paragraph
 import de.tudarmstadt.ukp.dkpro.core.api.segmentation.type.Sentence
+import de.tudarmstadt.ukp.dkpro.core.api.segmentation.type.Stem
 import de.tudarmstadt.ukp.dkpro.core.api.segmentation.type.Token
 import groovy.util.logging.Log4j
 import org.apache.log4j.Level
@@ -21,12 +25,12 @@ import org.junit.Test
 
 import java.util.regex.Matcher
 
+import static clinicalnlp.pattern.AnnotationPattern.*
+
+
 @Log4j
 class AnnotationRegexMatcherTests {
 
-    /**
-     * TestAnnotator
-     */
     static class TestAnnotator extends JCasAnnotator_ImplBase {
         @Override
         void process(JCas jcas) throws AnalysisEngineProcessException {
@@ -37,31 +41,30 @@ class AnnotationRegexMatcherTests {
             m.each {
                 Token t = jcas.create(type: Token, begin: m.start(0), end: m.end(0))
                 switch (t.coveredText) {
-                    case 'Tubular': t.pos = 'JJ'; t.lemma = 'tube'; t.stem = 'Tub'; break;
-                    case 'adenoma': t.pos = 'NN'; break;
-                    case 'was': t.pos = 'AUX'; t.lemma = 'is'; break;
-                    case 'seen': t.pos = 'VBN'; t.lemma = 'see'; t.stem = 'see'; break;
-                    case 'in': t.pos = 'IN'; t.lemma = 'in'; break;
-                    case 'the': t.pos = 'DT'; t.lemma = 'the'; break;
-                    case 'sigmoid': t.pos = 'JJ'; break;
-                    case 'colon': t.pos = 'NN'; break;
-                    case '.': t.pos = 'PUNC'; break;
+                    case 'Tubular': t.pos = jcas.create(type:POS, posValue:'JJ'); t.lemma = jcas.create(type:Lemma, value:'tub'); t.stem = jcas.create(type:Stem, value:'Tub'); break
+                    case 'adenoma': t.pos = jcas.create(type:POS, posValue:'NN'); break
+                    case 'was': t.pos = jcas.create(type:POS, posValue:'AUX'); t.lemma = jcas.create(type:Lemma, value:'is'); break
+                    case 'seen': t.pos = jcas.create(type:POS, posValue:'VBN'); t.lemma = jcas.create(type:Lemma, value:'see'); t.stem = jcas.create(type:Stem, value:'see'); break
+                    case 'in': t.pos = jcas.create(type:POS, posValue:'IN'); t.lemma = jcas.create(type:Lemma, value:'in'); break
+                    case 'the': t.pos = jcas.create(type:POS, posValue:'DT'); t.lemma = jcas.create(type:Lemma, value:'the'); break
+                    case 'sigmoid': t.pos = jcas.create(type:POS, posValue:'JJ'); break
+                    case 'colon': t.pos = jcas.create(type:POS, posValue:'NN'); break
+                    case '.': t.pos = jcas.create(type:POS, posValue:'PUNC'); break
                 }
             }
             m = (text =~ /(?i)\b(sigmoid\s+colon)|(tubular\s+adenoma)|(polyps)\b/)
             m.each {
                 NamedEntity nem = jcas.create(type: NamedEntity, begin: m.start(0), end: m.end(0))
                 switch (nem.coveredText) {
-                    case 'Tubular adenoma': nem.code = 'C01'; break;
-                    case 'sigmoid colon': nem.code = 'C02'; break;
-                    case 'polyps': nem.code = 'C03'; break;
+                    case 'Tubular adenoma': nem.value = 'C01'; break
+                    case 'sigmoid colon': nem.value = 'C02'; break
+                    case 'polyps': nem.value = 'C03'; break
                 }
             }
         }
     }
 
-    @BeforeClass
-    static void setupClass() {
+    @BeforeClass static void setupClass() {
         def config = new ConfigSlurper().parse(
             AnnotationRegexMatcherTests.class.getResource('/config.groovy').text)
         PropertyConfigurator.configure(config.toProperties())
@@ -70,8 +73,7 @@ class AnnotationRegexMatcherTests {
 
     JCas jcas;
 
-    @Before
-    void setUp() throws Exception {
+    @Before void setUp() throws Exception {
         log.setLevel(Level.INFO)
         AggregateBuilder builder = new AggregateBuilder()
         builder.with {
@@ -84,13 +86,12 @@ class AnnotationRegexMatcherTests {
         SimplePipeline.runPipeline(this.jcas, engine)
     }
 
-    @Test
-    void testMatch1() {
+    @Test void testMatch1() {
         //--------------------------------------------------------------------------------------------------------------
         // Create an AnnotationRegex instance
         //--------------------------------------------------------------------------------------------------------------
-        //noinspection GroovyAssignabilityCheck
-        AnnotationRegex regex = new AnnotationRegex(AnnotationPattern.get$N('tokens', AnnotationPattern.set$A(Token)(1,3)))
+        AnnotationRegex regex = new AnnotationRegex((AnnotationPattern)
+            $N('tokens', $A(Token)(1,3)))
 
         //--------------------------------------------------------------------------------------------------------------
         // Create a sequence of annotations and a matcher
@@ -129,24 +130,23 @@ class AnnotationRegexMatcherTests {
         assert !matcher.hasNext()
     }
 
-    @Test
-    void testMatch2() {
+    @Test void testMatch2() {
         //--------------------------------------------------------------------------------------------------------------
         // Create an AnnotationRegex instance
         //--------------------------------------------------------------------------------------------------------------
-        AnnotationRegex regex = new AnnotationRegex(
-            AnnotationPattern.get$N('finding', AnnotationPattern.get$A(NamedEntityMention, [text:/(?i)tubular\s+adenoma/])) &
-                AnnotationPattern.set$A(Token)(0,2) &
-                AnnotationPattern.get$N('seen', AnnotationPattern.get$A(Token, [text:/seen/, pos:/V.*/])) &
-                AnnotationPattern.get$N('tokens', AnnotationPattern.get$A(Token, [text:/in|the/])(0,2)) &
-                AnnotationPattern.get$N('site', AnnotationPattern.get$A(NamedEntityMention, [text:/(?i)Sigmoid\s+colon/, code:/C.2/]))
+        AnnotationRegex regex = new AnnotationRegex((AnnotationPattern)
+            $N('finding', $A(NamedEntity, [text:/(?i)tubular\s+adenoma/])) &
+                $A(Token)(0,2) &
+                $N('seen', $A(Token, [text:/seen/, posValue:/V.*/])) &
+                $N('tokens', $A(Token, [text:/in|the/])(0,2)) &
+                $N('site', $A(NamedEntity, [text:/(?i)Sigmoid\s+colon/, value:/C.2/]))
         )
 
         //--------------------------------------------------------------------------------------------------------------
         // Create a sequence of annotations and a matcher
         //--------------------------------------------------------------------------------------------------------------
         AnnotationSequencer sequencer = new AnnotationSequencer(jcas.select(type:Sentence)[0],
-            [NamedEntityMention, Token])
+            [NamedEntity, Token])
         AnnotationRegexMatcher matcher = regex.matcher(sequencer.first())
 
         //--------------------------------------------------------------------------------------------------------------
@@ -156,10 +156,10 @@ class AnnotationRegexMatcherTests {
         Binding binding = matcher.next()
         assert binding != null
         assert !matcher.hasNext()
-        NamedEntityMention finding = binding.getVariable('finding')[0]
+        NamedEntity finding = binding.getVariable('finding')[0]
         assert finding != null
         assert finding.coveredText ==~ /(?i)tubular\s+adenoma/
-        NamedEntityMention site = binding.getVariable('site')[0]
+        NamedEntity site = binding.getVariable('site')[0]
         assert site != null
         assert site.coveredText ==~ /sigmoid\s+colon/
         Token token = binding.getVariable('tokens')[0]
@@ -175,20 +175,19 @@ class AnnotationRegexMatcherTests {
         //--------------------------------------------------------------------------------------------------------------
         // Create an AnnotationRegex instance
         //--------------------------------------------------------------------------------------------------------------
-        //noinspection GroovyAssignabilityCheck
-        AnnotationRegex regex = new AnnotationRegex(
-            AnnotationPattern.get$N('finding',
-                AnnotationPattern.get$A(NamedEntityMention, [text:/(?i)tubular\s+adenoma/]) &
-                AnnotationPattern.set$A(Token)(1,5)) &
-                AnnotationPattern.get$N('site',
-                    AnnotationPattern.set$A(Token)(1,3) & AnnotationPattern.set$A(NamedEntityMention))
+        AnnotationRegex regex = new AnnotationRegex((AnnotationPattern)
+            $N('finding',
+                $A(NamedEntity, [text:/(?i)tubular\s+adenoma/]) &
+                $A(Token)(1,5)) &
+                $N('site',
+                    $A(Token)(1,3) & $A(NamedEntity))
         )
 
         //--------------------------------------------------------------------------------------------------------------
         // Create a sequence of annotations and a matcher
         //--------------------------------------------------------------------------------------------------------------
         AnnotationSequencer sequencer = new AnnotationSequencer(jcas.select(type:Sentence)[0],
-            [NamedEntityMention, Token])
+            [NamedEntity, Token])
         AnnotationRegexMatcher matcher = regex.matcher(sequencer.first())
 
         //--------------------------------------------------------------------------------------------------------------
@@ -216,18 +215,18 @@ class AnnotationRegexMatcherTests {
         //--------------------------------------------------------------------------------------------------------------
         //noinspection GroovyAssignabilityCheck
         AnnotationRegex regex = new AnnotationRegex(
-            AnnotationPattern.set$A(Token)(0,5) &
-                AnnotationPattern.get$N('nem',
-                    AnnotationPattern.get$A(NamedEntityMention, [text:/(?i)tubular\s+adenoma/]) |
-                        AnnotationPattern.get$A(NamedEntityMention, [text:/(?i)sigmoid\s+colon/])) &
-                AnnotationPattern.set$A(Token)(0,5)
+            $A(Token)(0,5) &
+                $N('nem',
+                    $A(NamedEntity, [text:/(?i)tubular\s+adenoma/]) |
+                        $A(NamedEntity, [text:/(?i)sigmoid\s+colon/])) &
+                $A(Token)(0,5)
         )
 
         //--------------------------------------------------------------------------------------------------------------
         // Create a sequence of annotations and a matcher
         //--------------------------------------------------------------------------------------------------------------
         AnnotationSequencer sequencer = new AnnotationSequencer(jcas.select(type:Sentence)[0],
-            [NamedEntityMention, Token])
+            [NamedEntity, Token])
         AnnotationRegexMatcher matcher = regex.matcher(sequencer.first())
 
         //--------------------------------------------------------------------------------------------------------------
@@ -251,7 +250,7 @@ class AnnotationRegexMatcherTests {
         // Create an AnnotationRegex instance
         //--------------------------------------------------------------------------------------------------------------
         AnnotationRegex regex = new AnnotationRegex(
-            AnnotationPattern.get$N('tok', AnnotationPattern.set$A(Token)) & AnnotationPattern.get$N('adenoma', AnnotationPattern.get$A(Token, [text:/adenoma/]))>>true
+            $N('tok', $A(Token)) & $N('adenoma', $A(Token, [text:/adenoma/]))>>true
         )
 
         //--------------------------------------------------------------------------------------------------------------
@@ -277,7 +276,7 @@ class AnnotationRegexMatcherTests {
         // Create an AnnotationRegex instance
         //--------------------------------------------------------------------------------------------------------------
         AnnotationRegex regex = new AnnotationRegex(
-            AnnotationPattern.get$N('tok', AnnotationPattern.set$A(Token)) & AnnotationPattern.get$A(Token, [text:/adenoma|seen|sigmoid|colon/])>>false
+            $N('tok', $A(Token)) & $A(Token, [text:/adenoma|seen|sigmoid|colon/])>>false
         )
 
         //--------------------------------------------------------------------------------------------------------------
@@ -314,9 +313,8 @@ class AnnotationRegexMatcherTests {
         //--------------------------------------------------------------------------------------------------------------
         // Create an AnnotationRegex instance
         //--------------------------------------------------------------------------------------------------------------
-        //noinspection GroovyAssignabilityCheck
-        AnnotationRegex regex = new AnnotationRegex(
-            AnnotationPattern.get$A(Token, [text:/adenoma/])<<true & AnnotationPattern.get$N('tok', AnnotationPattern.set$A(Token)(3,3))
+        AnnotationRegex regex = new AnnotationRegex((AnnotationPattern)
+            $A(Token, [text:/adenoma/])<<true & $N('tok', $A(Token)(3,3))
         )
 
         //--------------------------------------------------------------------------------------------------------------
@@ -343,9 +341,8 @@ class AnnotationRegexMatcherTests {
         //--------------------------------------------------------------------------------------------------------------
         // Create an AnnotationRegex instance
         //--------------------------------------------------------------------------------------------------------------
-        //noinspection GroovyAssignabilityCheck
-        AnnotationRegex regex = new AnnotationRegex(
-            AnnotationPattern.get$A(Token, [text:/adenoma|seen|sigmoid/])<<false & AnnotationPattern.get$N('tok', AnnotationPattern.set$A(Token))
+        AnnotationRegex regex = new AnnotationRegex((AnnotationPattern)
+            $A(Token, [text:/adenoma|seen|sigmoid/])<<false & $N('tok', $A(Token))
         )
 
         //--------------------------------------------------------------------------------------------------------------
@@ -386,11 +383,10 @@ class AnnotationRegexMatcherTests {
         //--------------------------------------------------------------------------------------------------------------
         // Create an AnnotationRegex instance
         //--------------------------------------------------------------------------------------------------------------
-        //noinspection GroovyAssignabilityCheck
-        AnnotationRegex regex = new AnnotationRegex(
-            AnnotationPattern.get$A(Token, [text:/was/])<<true &
-                AnnotationPattern.get$N('tok', AnnotationPattern.set$A(Token)(0,3)) &
-                AnnotationPattern.get$A(Token, [text:/sigmoid/])>>true
+        AnnotationRegex regex = new AnnotationRegex((AnnotationPattern)
+            $A(Token, [text:/was/])<<true &
+                $N('tok', $A(Token)(0,3)) &
+                $A(Token, [text:/sigmoid/])>>true
         )
 
         //--------------------------------------------------------------------------------------------------------------
@@ -419,7 +415,7 @@ class AnnotationRegexMatcherTests {
         //--------------------------------------------------------------------------------------------------------------
         //noinspection GroovyAssignabilityCheck
         AnnotationRegex regex = new AnnotationRegex(
-            AnnotationPattern.get$N('tokens', AnnotationPattern.set$A(Token)(3,5, false)) // 'false' -> greedy is false
+            $N('tokens', $A(Token)(3,5, false)) // 'false' -> greedy is false
         )
 
         //--------------------------------------------------------------------------------------------------------------
@@ -449,16 +445,16 @@ class AnnotationRegexMatcherTests {
         //--------------------------------------------------------------------------------------------------------------
         //noinspection GroovyAssignabilityCheck
         AnnotationRegex regex = new AnnotationRegex(
-            +AnnotationPattern.set$LB(AnnotationPattern.get$A(NamedEntityMention, [code:'C01'])) &
-                AnnotationPattern.get$N('tok', AnnotationPattern.set$A(Token)(0,10)) &
-                +AnnotationPattern.set$LA(AnnotationPattern.get$A(NamedEntityMention, [code:'C02']))
+            +$LB($A(NamedEntity, [value:'C01'])) &
+                $N('tok', $A(Token)(0,10)) &
+                +$LA($A(NamedEntity, [value:'C02']))
         )
 
         //--------------------------------------------------------------------------------------------------------------
         // Create a sequence of annotations and a matcher
         //--------------------------------------------------------------------------------------------------------------
         AnnotationSequencer sequencer = new AnnotationSequencer(jcas.select(type:Sentence)[0],
-            [NamedEntityMention, Token])
+            [NamedEntity, Token])
         AnnotationRegexMatcher matcher = regex.matcher(sequencer.first())
 
         //--------------------------------------------------------------------------------------------------------------
@@ -472,20 +468,20 @@ class AnnotationRegexMatcherTests {
         assert tok[1].coveredText == 'seen'
         assert tok[2].coveredText == 'in'
         assert tok[3].coveredText == 'the'
-        jcas.create(type:TextSpan, begin:tok[0].begin, end:tok[3].end)
-        assert jcas.select(type:TextSpan).size() == 1
+        jcas.create(type:Paragraph, begin:tok[0].begin, end:tok[3].end)
+        assert jcas.select(type:Paragraph).size() == 1
 
         //--------------------------------------------------------------------------------------------------------------
         // Create an AnnotationRegex instance that looks for the TextSpan
         //--------------------------------------------------------------------------------------------------------------
         AnnotationRegex regex2 = new AnnotationRegex(
-            AnnotationPattern.get$N('span', AnnotationPattern.set$A(TextSpan))
+            $N('span', $A(Paragraph))
         )
 
         //--------------------------------------------------------------------------------------------------------------
         // Create a sequence of annotations and a matcher
         //--------------------------------------------------------------------------------------------------------------
-        sequencer = new AnnotationSequencer(jcas.select(type:Sentence)[0], [TextSpan])
+        sequencer = new AnnotationSequencer(jcas.select(type:Sentence)[0], [Paragraph])
         matcher = regex2.matcher(sequencer.first())
 
         //--------------------------------------------------------------------------------------------------------------
@@ -504,9 +500,8 @@ class AnnotationRegexMatcherTests {
         //--------------------------------------------------------------------------------------------------------------
         // Create an AnnotationRegex instance
         //--------------------------------------------------------------------------------------------------------------
-        //noinspection GroovyAssignabilityCheck
-        AnnotationRegex regex = new AnnotationRegex(
-            AnnotationPattern.get$N('tokens', AnnotationPattern.get$A(Token, [pos:/(N|V|D).+/, lemma:/.+/, stem:/.*/, text:/.+/]))
+        AnnotationRegex regex = new AnnotationRegex((AnnotationPattern)
+            $N('tokens', $A(Token, [posValue:/(N|V|D).+/, lemmaValue:/.+/, stemValue:/.*/, text:/.+/]))
         )
 
         //--------------------------------------------------------------------------------------------------------------
@@ -536,16 +531,15 @@ class AnnotationRegexMatcherTests {
         //--------------------------------------------------------------------------------------------------------------
         // Create an AnnotationRegex instance
         //--------------------------------------------------------------------------------------------------------------
-        //noinspection GroovyAssignabilityCheck
-        AnnotationRegex regex = new AnnotationRegex(
-            AnnotationPattern.get$N('nem', AnnotationPattern.set$A(NamedEntityMention) & AnnotationPattern.get$N('tok', AnnotationPattern.set$A(Token)))
+        AnnotationRegex regex = new AnnotationRegex((AnnotationPattern)
+            $N('nem', $A(NamedEntity) & $N('tok', $A(Token)))
         )
 
         //--------------------------------------------------------------------------------------------------------------
         // Create a sequence of annotations and a matcher
         //--------------------------------------------------------------------------------------------------------------
         AnnotationSequencer sequencer = new AnnotationSequencer(jcas.select(type:Sentence)[0],
-            [NamedEntityMention, Token])
+            [NamedEntity, Token])
         AnnotationRegexMatcher matcher = regex.matcher(sequencer.first())
 
         //--------------------------------------------------------------------------------------------------------------
@@ -555,7 +549,7 @@ class AnnotationRegexMatcherTests {
         Binding binding = matcher.next()
         List<? extends Annotation> nem = binding.getVariable('nem')
         assert nem.size() == 2
-        assert nem[0] instanceof NamedEntityMention
+        assert nem[0] instanceof NamedEntity
         assert nem[1] instanceof Token
         List<? extends Annotation> tok = binding.getVariable('tok')
         assert tok.size() == 1
@@ -568,9 +562,8 @@ class AnnotationRegexMatcherTests {
         //--------------------------------------------------------------------------------------------------------------
         // Create an AnnotationRegex instance
         //--------------------------------------------------------------------------------------------------------------
-        //noinspection GroovyAssignabilityCheck
-        AnnotationRegex regex = new AnnotationRegex(
-            AnnotationPattern.get$N('tokens', AnnotationPattern.get$N('tok1', AnnotationPattern.set$A(Token)) & AnnotationPattern.get$N('tok2', AnnotationPattern.set$A(Token)) & AnnotationPattern.get$N('tok3', AnnotationPattern.set$A(Token)))
+        AnnotationRegex regex = new AnnotationRegex((AnnotationPattern)
+            $N('tokens', $N('tok1', $A(Token)) & $N('tok2', $A(Token)) & $N('tok3', $A(Token)))
         )
 
         //--------------------------------------------------------------------------------------------------------------
@@ -602,14 +595,13 @@ class AnnotationRegexMatcherTests {
         //--------------------------------------------------------------------------------------------------------------
         // Create an AnnotationRegex instance
         //--------------------------------------------------------------------------------------------------------------
-        //noinspection GroovyAssignabilityCheck
-        AnnotationRegex regex = new AnnotationRegex(
-            AnnotationPattern.get$N('tokens',
-                AnnotationPattern.get$N('tok1', AnnotationPattern.get$A(Token, [text:/Tubul.*/])) |
-                AnnotationPattern.get$N('tok2', AnnotationPattern.get$A(Token, [text:/aden.../])) |
-                AnnotationPattern.get$N('tok3',
-                    AnnotationPattern.get$N('sigmoid', AnnotationPattern.get$A(Token, [text:/...moid/])) &
-                    AnnotationPattern.get$N('colon', AnnotationPattern.get$A(Token, [text:/(?i)COLON(IC)?/]))))
+        AnnotationRegex regex = new AnnotationRegex((AnnotationPattern)
+            $N('tokens',
+                $N('tok1', $A(Token, [text:/Tubul.*/])) |
+                $N('tok2', $A(Token, [text:/aden.../])) |
+                $N('tok3',
+                    $N('sigmoid', $A(Token, [text:/...moid/])) &
+                    $N('colon', $A(Token, [text:/(?i)COLON(IC)?/]))))
         )
 
         //--------------------------------------------------------------------------------------------------------------
