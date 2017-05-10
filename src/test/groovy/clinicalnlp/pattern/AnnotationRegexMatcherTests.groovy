@@ -170,8 +170,7 @@ class AnnotationRegexMatcherTests {
         assert token.coveredText == 'the'
     }
 
-    @Test
-    void testGroups() {
+    @Test void testGroups() {
         //--------------------------------------------------------------------------------------------------------------
         // Create an AnnotationRegex instance
         //--------------------------------------------------------------------------------------------------------------
@@ -208,8 +207,7 @@ class AnnotationRegexMatcherTests {
         assert site[1].coveredText == 'sigmoid colon'
     }
 
-    @Test
-    void testUnions() {
+    @Test void testUnions() {
         //--------------------------------------------------------------------------------------------------------------
         // Create an AnnotationRegex instance
         //--------------------------------------------------------------------------------------------------------------
@@ -244,8 +242,7 @@ class AnnotationRegexMatcherTests {
         assert !matcher.hasNext()
     }
 
-    @Test
-    void testPositiveLookAhead() {
+    @Test void testPositiveLookAhead() {
         //--------------------------------------------------------------------------------------------------------------
         // Create an AnnotationRegex instance
         //--------------------------------------------------------------------------------------------------------------
@@ -270,8 +267,7 @@ class AnnotationRegexMatcherTests {
         assert !matcher.hasNext()
     }
 
-    @Test
-    void testNegativeLookAhead() {
+    @Test void testNegativeLookAhead() {
         //--------------------------------------------------------------------------------------------------------------
         // Create an AnnotationRegex instance
         //--------------------------------------------------------------------------------------------------------------
@@ -308,8 +304,7 @@ class AnnotationRegexMatcherTests {
         assert !matcher.hasNext()
     }
 
-    @Test
-    void testPositiveLookBehind() {
+    @Test void testPositiveLookBehind() {
         //--------------------------------------------------------------------------------------------------------------
         // Create an AnnotationRegex instance
         //--------------------------------------------------------------------------------------------------------------
@@ -336,8 +331,7 @@ class AnnotationRegexMatcherTests {
         assert !matcher.hasNext()
     }
 
-    @Test
-    void testNegativeLookBehind() {
+    @Test void testNegativeLookBehind() {
         //--------------------------------------------------------------------------------------------------------------
         // Create an AnnotationRegex instance
         //--------------------------------------------------------------------------------------------------------------
@@ -378,8 +372,7 @@ class AnnotationRegexMatcherTests {
         assert !matcher.hasNext()
     }
 
-    @Test
-    void testLookAround() {
+    @Test void testLookAround() {
         //--------------------------------------------------------------------------------------------------------------
         // Create an AnnotationRegex instance
         //--------------------------------------------------------------------------------------------------------------
@@ -408,8 +401,7 @@ class AnnotationRegexMatcherTests {
         assert !matcher.hasNext()
     }
 
-    @Test
-    void testLazyQuantifier() {
+    @Test void testLazyQuantifier() {
         //--------------------------------------------------------------------------------------------------------------
         // Create an AnnotationRegex instance
         //--------------------------------------------------------------------------------------------------------------
@@ -438,8 +430,7 @@ class AnnotationRegexMatcherTests {
         assert !matcher.hasNext()
     }
 
-    @Test
-    void testTextSpan() {
+    @Test void testTextSpan() {
         //--------------------------------------------------------------------------------------------------------------
         // Create an AnnotationRegex instance
         //--------------------------------------------------------------------------------------------------------------
@@ -495,8 +486,7 @@ class AnnotationRegexMatcherTests {
         assert !matcher.hasNext()
     }
 
-    @Test
-    void testWildcards() {
+    @Test void testWildcards() {
         //--------------------------------------------------------------------------------------------------------------
         // Create an AnnotationRegex instance
         //--------------------------------------------------------------------------------------------------------------
@@ -526,8 +516,7 @@ class AnnotationRegexMatcherTests {
         assert !matcher.hasNext()
     }
 
-    @Test
-    void testNamedGroups1() {
+    @Test void testNamedGroups1() {
         //--------------------------------------------------------------------------------------------------------------
         // Create an AnnotationRegex instance
         //--------------------------------------------------------------------------------------------------------------
@@ -557,8 +546,7 @@ class AnnotationRegexMatcherTests {
         assert nem[1] == tok[0]
     }
 
-    @Test
-    void testNamedGroups2() {
+    @Test void testNamedGroups2() {
         //--------------------------------------------------------------------------------------------------------------
         // Create an AnnotationRegex instance
         //--------------------------------------------------------------------------------------------------------------
@@ -590,8 +578,7 @@ class AnnotationRegexMatcherTests {
         assert tokens[2] == tok3[0]
      }
 
-    @Test
-    void testNamedGroups3() {
+    @Test void testNamedGroups3() {
         //--------------------------------------------------------------------------------------------------------------
         // Create an AnnotationRegex instance
         //--------------------------------------------------------------------------------------------------------------
