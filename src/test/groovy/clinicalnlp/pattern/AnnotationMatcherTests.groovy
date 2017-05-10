@@ -29,7 +29,7 @@ import static clinicalnlp.pattern.AnnotationPattern.*
 
 
 @Log4j
-class AnnotationRegexMatcherTests {
+class AnnotationMatcherTests {
 
     static class TestAnnotator extends JCasAnnotator_ImplBase {
         @Override
@@ -66,7 +66,7 @@ class AnnotationRegexMatcherTests {
 
     @BeforeClass static void setupClass() {
         def config = new ConfigSlurper().parse(
-            AnnotationRegexMatcherTests.class.getResource('/config.groovy').text)
+            AnnotationMatcherTests.class.getResource('/config.groovy').text)
         PropertyConfigurator.configure(config.toProperties())
         Class.forName('clinicalnlp.dsl.DSL')
     }

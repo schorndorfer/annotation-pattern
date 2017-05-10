@@ -221,7 +221,6 @@ class AnnotationSequencerTests {
 
         assert !iter.hasNext()
 
-
         // reverse order in which types are declared
         sequencer = new AnnotationSequencer(sentence, [Token, NamedEntity])
         iter = sequencer.iterator()
