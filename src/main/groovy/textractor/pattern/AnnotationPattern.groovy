@@ -1,4 +1,4 @@
-package clinicalnlp.pattern
+package textractor.pattern
 
 import org.apache.uima.jcas.tcas.Annotation
 

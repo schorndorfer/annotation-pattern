@@ -1,12 +1,12 @@
-package clinicalnlp.pattern
+package textractor.pattern
 
 import org.apache.uima.jcas.tcas.Annotation
 import org.codehaus.groovy.runtime.StringGroovyMethods
 
 import java.util.regex.Matcher
 
-import static clinicalnlp.pattern.AnnotationRegex.LBRACK
-import static clinicalnlp.pattern.AnnotationRegex.RBRACK
+import static AnnotationRegex.LBRACK
+import static AnnotationRegex.RBRACK
 
 /**
  * AnnotationRegexMatcher class definition

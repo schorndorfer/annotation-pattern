@@ -2,7 +2,7 @@ group 'clinicalnlp'
 version '2.0-SNAPSHOT'
 
 task wrapper(type: Wrapper) {
-  gradleVersion = '3.3'
+  gradleVersion = '4.3.1'
   distributionUrl = "https://services.gradle.org/distributions/gradle-$gradleVersion-all.zip"
 }
 
@@ -24,9 +24,6 @@ repositories {
     maven {
         url 'http://zoidberg.ukp.informatik.tu-darmstadt.de/artifactory/public-model-releases-local'
     }
-    maven {
-        url 'http://decipher.chpc.utah.edu/nexus/content/groups/public'
-    }
 }
 
 
@@ -42,7 +39,7 @@ dependencies {
     compile 'org.apache.uima:uimaj-core:2.10.0'
     compile 'org.apache.uima:uimafit-core:2.3.0'
 
-    testCompile "clinicalnlp:groovy-dsl:2.0-SNAPSHOT"
+    testCompile "textractor:groovy-dsl:2.0-SNAPSHOT"
     testCompile "de.tudarmstadt.ukp.dkpro.core:de.tudarmstadt.ukp.dkpro.core.opennlp-asl:${dkpro$core$version}"
     testCompile group: 'junit', name: 'junit', version: '4.12'
 }

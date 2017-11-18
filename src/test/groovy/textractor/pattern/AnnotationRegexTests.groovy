@@ -1,4 +1,4 @@
-package clinicalnlp.pattern
+package textractor.pattern
 
 import de.tudarmstadt.ukp.dkpro.core.api.ner.type.NamedEntity
 import de.tudarmstadt.ukp.dkpro.core.api.segmentation.type.Sentence
@@ -10,7 +10,7 @@ import org.junit.Before
 import org.junit.BeforeClass
 import org.junit.Test
 
-import static clinicalnlp.pattern.AnnotationPattern.*
+import static textractor.pattern.AnnotationPattern.*
 
 @Log4j
 class AnnotationRegexTests {

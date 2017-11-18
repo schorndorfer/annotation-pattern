@@ -1,4 +1,4 @@
-package clinicalnlp.pattern
+package textractor.pattern
 
 import groovy.util.logging.Log4j
 import org.apache.uima.jcas.JCas

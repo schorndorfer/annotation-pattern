@@ -1,4 +1,4 @@
-package clinicalnlp.pattern
+package textractor.pattern
 
 import de.tudarmstadt.ukp.dkpro.core.api.ner.type.NamedEntity
 import de.tudarmstadt.ukp.dkpro.core.api.segmentation.type.Document
@@ -24,6 +24,8 @@ import org.junit.Test
 
 import java.util.regex.Matcher
 import java.util.regex.Pattern
+
+import static textractor.AnnotationHelper.*
 
 @Log4j
 class AnnotationSequencerTests {
@@ -81,7 +83,6 @@ class AnnotationSequencerTests {
 
     @BeforeClass
     static void setupClass() {
-        Class.forName('clinicalnlp.dsl.DSL')
         def config = new ConfigSlurper().parse(
             AnnotationSequencerTests.class.getResource('/config.groovy').text)
         PropertyConfigurator.configure(config.toProperties())
@@ -114,16 +115,16 @@ class AnnotationSequencerTests {
 
     @Test
     void smokeTest() {
-        Collection<Document> segs = jcas.select(type:Document)
+        Collection<Document> segs = select(jcas, [type:Document])
         assert segs.size() == 1
-        Collection<Sentence> sents = jcas.select(type:Sentence)
+        Collection<Sentence> sents = select(jcas, [type:Sentence])
         assert sents.size() == 3
-        Collection<Token> tokens = jcas.select(type:Token)
+        Collection<Token> tokens = select(jcas, [type:Token])
         assert tokens.size() == 22
-        Collection<NamedEntity> nems = jcas.select(type:NamedEntity)
+        Collection<NamedEntity> nems = select(jcas, [type:NamedEntity])
         assert nems.size() == 5
 
-        Sentence sentence = this.jcas.select(type:Sentence)[0]
+        Sentence sentence = select(jcas, [type:Sentence])[0]
         AnnotationSequencer sequencer = new AnnotationSequencer(sentence, [NamedEntity, Token])
         int iterCount = 0
         sequencer.each { List<? extends Annotation> seq ->
@@ -138,7 +139,7 @@ class AnnotationSequencerTests {
 
     @Test
     void testSequenceGeneration1() {
-        Document newSegment = this.jcas.create(type:Document, begin:0, end:this.jcas.documentText.length())
+        Document newSegment = create(jcas, [type:Document, begin:0, end:jcas.documentText.length()])
         Collection<Class<? extends Annotation>> types = [Document]
         AnnotationSequencer sequencer = new AnnotationSequencer(newSegment, types)
         assert sequencer != null
@@ -154,7 +155,7 @@ class AnnotationSequencerTests {
 
     @Test
     void testSequenceGeneration2() {
-        Document segment = this.jcas.select(type:Document)[0]
+        Document segment = select(jcas, [type:Document])[0]
         AnnotationSequencer sequencer = new AnnotationSequencer(segment, [Sentence])
         assert sequencer != null
 
@@ -171,7 +172,7 @@ class AnnotationSequencerTests {
 
     @Test
     void testSequenceGeneration3() {
-        Sentence sentence = this.jcas.select(type:Sentence)[0]
+        Sentence sentence = select(jcas, [type:Sentence])[0]
         Collection<Class<? extends Annotation>> types = [Token]
         AnnotationSequencer sequencer = new AnnotationSequencer(sentence, types)
         assert sequencer != null
@@ -197,7 +198,7 @@ class AnnotationSequencerTests {
 
     @Test
     void testSequenceGeneration4() {
-        Sentence sentence = this.jcas.select(type:Sentence)[2]
+        Sentence sentence = select(jcas, [type:Sentence])[2]
         AnnotationSequencer sequencer = new AnnotationSequencer(sentence, [NamedEntity, Token])
         Iterator<List<? extends Annotation>> iter = sequencer.iterator()
 

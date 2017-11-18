@@ -1,4 +1,4 @@
-package clinicalnlp.pattern
+package textractor.pattern
 
 import de.tudarmstadt.ukp.dkpro.core.api.lexmorph.type.pos.POS
 import de.tudarmstadt.ukp.dkpro.core.api.ner.type.NamedEntity
@@ -25,8 +25,8 @@ import org.junit.Test
 
 import java.util.regex.Matcher
 
-import static clinicalnlp.pattern.AnnotationPattern.*
-
+import static textractor.pattern.AnnotationPattern.*
+import static textractor.AnnotationHelper.*
 
 @Log4j
 class AnnotationMatcherTests {
@@ -35,26 +35,51 @@ class AnnotationMatcherTests {
         @Override
         void process(JCas jcas) throws AnalysisEngineProcessException {
             String text = jcas.documentText
-            jcas.create(type: Document, begin: 0, end: text.length())
-            jcas.create(type: Sentence, begin: 0, end: text.length())
+            create(jcas, [type: Document, begin: 0, end: text.length()])
+            create(jcas, [type: Sentence, begin: 0, end: text.length()])
             Matcher m = (text =~ /\b\w+\b/)
             m.each {
-                Token t = jcas.create(type: Token, begin: m.start(0), end: m.end(0))
+                Token t = create(jcas, [type: Token, begin: m.start(0), end: m.end(0)])
                 switch (t.coveredText) {
-                    case 'Tubular': t.pos = jcas.create(type:POS, posValue:'JJ'); t.lemma = jcas.create(type:Lemma, value:'tub'); t.stem = jcas.create(type:Stem, value:'Tub'); break
-                    case 'adenoma': t.pos = jcas.create(type:POS, posValue:'NN'); break
-                    case 'was': t.pos = jcas.create(type:POS, posValue:'AUX'); t.lemma = jcas.create(type:Lemma, value:'is'); break
-                    case 'seen': t.pos = jcas.create(type:POS, posValue:'VBN'); t.lemma = jcas.create(type:Lemma, value:'see'); t.stem = jcas.create(type:Stem, value:'see'); break
-                    case 'in': t.pos = jcas.create(type:POS, posValue:'IN'); t.lemma = jcas.create(type:Lemma, value:'in'); break
-                    case 'the': t.pos = jcas.create(type:POS, posValue:'DT'); t.lemma = jcas.create(type:Lemma, value:'the'); break
-                    case 'sigmoid': t.pos = jcas.create(type:POS, posValue:'JJ'); break
-                    case 'colon': t.pos = jcas.create(type:POS, posValue:'NN'); break
-                    case '.': t.pos = jcas.create(type:POS, posValue:'PUNC'); break
+                    case 'Tubular':
+                        t.pos = create(jcas, [type:POS, posValue:'JJ'])
+                        t.lemma = create(jcas, [type:Lemma, value:'tub'])
+                        t.stem = create(jcas, [type:Stem, value:'Tub'])
+                        break
+                    case 'adenoma':
+                        t.pos = create(jcas, [type:POS, posValue:'NN'])
+                        break
+                    case 'was':
+                        t.pos = create(jcas, [type:POS, posValue:'AUX'])
+                        t.lemma = create(jcas, [type:Lemma, value:'is'])
+                        break
+                    case 'seen':
+                        t.pos = create(jcas, [type:POS, posValue:'VBN'])
+                        t.lemma = create(jcas, [type:Lemma, value:'see'])
+                        t.stem = create(jcas, [type:Stem, value:'see'])
+                        break
+                    case 'in':
+                        t.pos = create(jcas, [type:POS, posValue:'IN'])
+                        t.lemma = create(jcas, [type:Lemma, value:'in'])
+                        break
+                    case 'the':
+                        t.pos = create(jcas, [type:POS, posValue:'DT'])
+                        t.lemma = create(jcas, [type:Lemma, value:'the'])
+                        break
+                    case 'sigmoid':
+                        t.pos = create(jcas, [type:POS, posValue:'JJ'])
+                        break
+                    case 'colon':
+                        t.pos = create(jcas, [type:POS, posValue:'NN'])
+                        break
+                    case '.':
+                        t.pos = create(jcas, [type:POS, posValue:'PUNC'])
+                        break
                 }
             }
             m = (text =~ /(?i)\b(sigmoid\s+colon)|(tubular\s+adenoma)|(polyps)\b/)
             m.each {
-                NamedEntity nem = jcas.create(type: NamedEntity, begin: m.start(0), end: m.end(0))
+                NamedEntity nem = create(jcas, [type: NamedEntity, begin: m.start(0), end: m.end(0)])
                 switch (nem.coveredText) {
                     case 'Tubular adenoma': nem.value = 'C01'; break
                     case 'sigmoid colon': nem.value = 'C02'; break
@@ -68,7 +93,6 @@ class AnnotationMatcherTests {
         def config = new ConfigSlurper().parse(
             AnnotationMatcherTests.class.getResource('/config.groovy').text)
         PropertyConfigurator.configure(config.toProperties())
-        Class.forName('clinicalnlp.dsl.DSL')
     }
 
     JCas jcas;
@@ -96,7 +120,7 @@ class AnnotationMatcherTests {
         //--------------------------------------------------------------------------------------------------------------
         // Create a sequence of annotations and a matcher
         //--------------------------------------------------------------------------------------------------------------
-        AnnotationSequencer sequencer = new AnnotationSequencer(jcas.select(type:Sentence)[0], [Token])
+        AnnotationSequencer sequencer = new AnnotationSequencer(select(jcas, [type:Sentence])[0], [Token])
         AnnotationRegexMatcher matcher = regex.matcher(sequencer.first())
 
         //--------------------------------------------------------------------------------------------------------------
@@ -145,7 +169,7 @@ class AnnotationMatcherTests {
         //--------------------------------------------------------------------------------------------------------------
         // Create a sequence of annotations and a matcher
         //--------------------------------------------------------------------------------------------------------------
-        AnnotationSequencer sequencer = new AnnotationSequencer(jcas.select(type:Sentence)[0],
+        AnnotationSequencer sequencer = new AnnotationSequencer(select(jcas, [type:Sentence])[0],
             [NamedEntity, Token])
         AnnotationRegexMatcher matcher = regex.matcher(sequencer.first())
 
@@ -185,7 +209,7 @@ class AnnotationMatcherTests {
         //--------------------------------------------------------------------------------------------------------------
         // Create a sequence of annotations and a matcher
         //--------------------------------------------------------------------------------------------------------------
-        AnnotationSequencer sequencer = new AnnotationSequencer(jcas.select(type:Sentence)[0],
+        AnnotationSequencer sequencer = new AnnotationSequencer(select(jcas, [type:Sentence])[0],
             [NamedEntity, Token])
         AnnotationRegexMatcher matcher = regex.matcher(sequencer.first())
 
@@ -223,7 +247,7 @@ class AnnotationMatcherTests {
         //--------------------------------------------------------------------------------------------------------------
         // Create a sequence of annotations and a matcher
         //--------------------------------------------------------------------------------------------------------------
-        AnnotationSequencer sequencer = new AnnotationSequencer(jcas.select(type:Sentence)[0],
+        AnnotationSequencer sequencer = new AnnotationSequencer(select(jcas, [type:Sentence])[0],
             [NamedEntity, Token])
         AnnotationRegexMatcher matcher = regex.matcher(sequencer.first())
 
@@ -253,7 +277,7 @@ class AnnotationMatcherTests {
         //--------------------------------------------------------------------------------------------------------------
         // Create a sequence of annotations and a matcher
         //--------------------------------------------------------------------------------------------------------------
-        AnnotationSequencer sequencer = new AnnotationSequencer(jcas.select(type:Sentence)[0], [Token])
+        AnnotationSequencer sequencer = new AnnotationSequencer(select(jcas, [type:Sentence])[0], [Token])
         AnnotationRegexMatcher matcher = regex.matcher(sequencer.first())
 
         //--------------------------------------------------------------------------------------------------------------
@@ -278,7 +302,7 @@ class AnnotationMatcherTests {
         //--------------------------------------------------------------------------------------------------------------
         // Create a sequence of annotations and a matcher
         //--------------------------------------------------------------------------------------------------------------
-        AnnotationSequencer sequencer = new AnnotationSequencer(jcas.select(type:Sentence)[0], [Token])
+        AnnotationSequencer sequencer = new AnnotationSequencer(select(jcas, [type:Sentence])[0], [Token])
         AnnotationRegexMatcher matcher = regex.matcher(sequencer.first())
 
         //--------------------------------------------------------------------------------------------------------------
@@ -315,7 +339,7 @@ class AnnotationMatcherTests {
         //--------------------------------------------------------------------------------------------------------------
         // Create a sequence of annotations and a matcher
         //--------------------------------------------------------------------------------------------------------------
-        AnnotationSequencer sequencer = new AnnotationSequencer(jcas.select(type:Sentence)[0], [Token])
+        AnnotationSequencer sequencer = new AnnotationSequencer(select(jcas, [type:Sentence])[0], [Token])
         AnnotationRegexMatcher matcher = regex.matcher(sequencer.first())
 
         //--------------------------------------------------------------------------------------------------------------
@@ -342,7 +366,7 @@ class AnnotationMatcherTests {
         //--------------------------------------------------------------------------------------------------------------
         // Create a sequence of annotations and a matcher
         //--------------------------------------------------------------------------------------------------------------
-        AnnotationSequencer sequencer = new AnnotationSequencer(jcas.select(type:Sentence)[0], [Token])
+        AnnotationSequencer sequencer = new AnnotationSequencer(select(jcas, [type:Sentence])[0], [Token])
         AnnotationRegexMatcher matcher = regex.matcher(sequencer.first())
 
         //--------------------------------------------------------------------------------------------------------------
@@ -385,7 +409,7 @@ class AnnotationMatcherTests {
         //--------------------------------------------------------------------------------------------------------------
         // Create a sequence of annotations and a matcher
         //--------------------------------------------------------------------------------------------------------------
-        AnnotationSequencer sequencer = new AnnotationSequencer(jcas.select(type:Sentence)[0], [Token])
+        AnnotationSequencer sequencer = new AnnotationSequencer(select(jcas, [type:Sentence])[0], [Token])
         AnnotationRegexMatcher matcher = regex.matcher(sequencer.first())
 
         //--------------------------------------------------------------------------------------------------------------
@@ -413,7 +437,7 @@ class AnnotationMatcherTests {
         //--------------------------------------------------------------------------------------------------------------
         // Create a sequence of annotations and a matcher
         //--------------------------------------------------------------------------------------------------------------
-        AnnotationSequencer sequencer = new AnnotationSequencer(jcas.select(type:Sentence)[0], [Token])
+        AnnotationSequencer sequencer = new AnnotationSequencer(select(jcas, [type:Sentence])[0], [Token])
         AnnotationRegexMatcher matcher = regex.matcher(sequencer.first())
 
         //--------------------------------------------------------------------------------------------------------------
@@ -444,7 +468,7 @@ class AnnotationMatcherTests {
         //--------------------------------------------------------------------------------------------------------------
         // Create a sequence of annotations and a matcher
         //--------------------------------------------------------------------------------------------------------------
-        AnnotationSequencer sequencer = new AnnotationSequencer(jcas.select(type:Sentence)[0],
+        AnnotationSequencer sequencer = new AnnotationSequencer(select(jcas, [type:Sentence])[0],
             [NamedEntity, Token])
         AnnotationRegexMatcher matcher = regex.matcher(sequencer.first())
 
@@ -459,8 +483,8 @@ class AnnotationMatcherTests {
         assert tok[1].coveredText == 'seen'
         assert tok[2].coveredText == 'in'
         assert tok[3].coveredText == 'the'
-        jcas.create(type:Paragraph, begin:tok[0].begin, end:tok[3].end)
-        assert jcas.select(type:Paragraph).size() == 1
+        create(jcas, [type:Paragraph, begin:tok[0].begin, end:tok[3].end])
+        assert select(jcas, [type:Paragraph]).size() == 1
 
         //--------------------------------------------------------------------------------------------------------------
         // Create an AnnotationRegex instance that looks for the TextSpan
@@ -472,7 +496,7 @@ class AnnotationMatcherTests {
         //--------------------------------------------------------------------------------------------------------------
         // Create a sequence of annotations and a matcher
         //--------------------------------------------------------------------------------------------------------------
-        sequencer = new AnnotationSequencer(jcas.select(type:Sentence)[0], [Paragraph])
+        sequencer = new AnnotationSequencer(select(jcas, [type:Sentence])[0], [Paragraph])
         matcher = regex2.matcher(sequencer.first())
 
         //--------------------------------------------------------------------------------------------------------------
@@ -497,7 +521,7 @@ class AnnotationMatcherTests {
         //--------------------------------------------------------------------------------------------------------------
         // Create a sequence of annotations and a matcher
         //--------------------------------------------------------------------------------------------------------------
-        AnnotationSequencer sequencer = new AnnotationSequencer(jcas.select(type:Sentence)[0], [Token])
+        AnnotationSequencer sequencer = new AnnotationSequencer(select(jcas, [type:Sentence])[0], [Token])
         AnnotationRegexMatcher matcher = regex.matcher(sequencer.first())
 
         //--------------------------------------------------------------------------------------------------------------
@@ -527,7 +551,7 @@ class AnnotationMatcherTests {
         //--------------------------------------------------------------------------------------------------------------
         // Create a sequence of annotations and a matcher
         //--------------------------------------------------------------------------------------------------------------
-        AnnotationSequencer sequencer = new AnnotationSequencer(jcas.select(type:Sentence)[0],
+        AnnotationSequencer sequencer = new AnnotationSequencer(select(jcas, [type:Sentence])[0],
             [NamedEntity, Token])
         AnnotationRegexMatcher matcher = regex.matcher(sequencer.first())
 
@@ -557,7 +581,7 @@ class AnnotationMatcherTests {
         //--------------------------------------------------------------------------------------------------------------
         // Create a sequence of annotations and a matcher
         //--------------------------------------------------------------------------------------------------------------
-        AnnotationSequencer sequencer = new AnnotationSequencer(jcas.select(type:Sentence)[0], [Token])
+        AnnotationSequencer sequencer = new AnnotationSequencer(select(jcas, [type:Sentence])[0], [Token])
         AnnotationRegexMatcher matcher = regex.matcher(sequencer.first())
 
         //--------------------------------------------------------------------------------------------------------------
@@ -594,7 +618,7 @@ class AnnotationMatcherTests {
         //--------------------------------------------------------------------------------------------------------------
         // Create a sequence of annotations and a matcher
         //--------------------------------------------------------------------------------------------------------------
-        AnnotationSequencer sequencer = new AnnotationSequencer(jcas.select(type:Sentence)[0], [Token])
+        AnnotationSequencer sequencer = new AnnotationSequencer(select(jcas, [type:Sentence])[0], [Token])
         AnnotationRegexMatcher matcher = regex.matcher(sequencer.first())
 
         //--------------------------------------------------------------------------------------------------------------
